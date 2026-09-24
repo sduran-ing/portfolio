@@ -1,0 +1,124 @@
+@import "tailwindcss";
+
+/*
+ * Tailwind v4 dropped the old `darkMode: 'class'` option from a JS config
+ * file, this @custom-variant is the CSS-native replacement. It tells
+ * Tailwind's `dark:` prefix to activate whenever a `.dark` class is present
+ * on <html> (or an ancestor). next-themes is what actually adds/removes that
+ * class at runtime when the toggle is clicked.
+ */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/*
+ * Dark is our default theme, so its values live directly on :root.
+ * The `.light` class (also set by next-themes) overrides them below.
+ *
+ * Naming note: these are named for their role (surface, ink, muted, accent),
+ * not their usual usage (like "background"), on purpose — a color literally
+ * named "background" produces an awkward "bg-background" utility once
+ * combined with Tailwind's bg- prefix. Naming around that avoids every
+ * class stuttering like that.
+ */
+:root {
+  --color-surface: #1c1512;
+  --color-surface-elevated: #241b16;
+  --color-ink: #f3ead9;
+  --color-muted: #c9beae;
+  --color-faint: #8a7d6e;
+  --color-accent: #a3c15f;
+}
+
+.light {
+  --color-surface: #faf6f0;
+  --color-surface-elevated: #f0e8db;
+  --color-ink: #2b211c;
+  --color-muted: #6b5f54;
+  --color-faint: #a89c8c;
+  --color-accent: #5f7a35;
+}
+
+/*
+ * `@theme inline` (not plain `@theme`) is what lets these utilities read
+ * from CSS variables that change at runtime, instead of Tailwind baking in
+ * one static value at build time. Without `inline`, toggling the theme
+ * wouldn't actually change anything rendered on screen.
+ *
+ * Because these live under Tailwind's --color-* namespace now (not just
+ * plain custom properties like before), Tailwind generates real utilities
+ * for them: bg-surface, text-ink, border-muted, bg-accent, text-accent,
+ * and so on — including opacity modifiers like bg-accent/80.
+ */
+@theme inline {
+  --color-surface: var(--color-surface);
+  --color-surface-elevated: var(--color-surface-elevated);
+  --color-ink: var(--color-ink);
+  --color-muted: var(--color-muted);
+  --color-faint: var(--color-faint);
+  --color-accent: var(--color-accent);
+  --font-heading: var(--font-fraunces);   /* Headings only, used sparingly, */
+  --font-sans: var(--font-inter);   /* Body text everywhere else */
+  --font-mono: var(--font-jetbrains-mono);    /* Small labels, nav text, tags. Never used for body */
+}
+
+body {
+  background: var(--color-surface);
+  color: var(--color-ink);
+}
+
+/*
+ * Component-level design tokens — reusable values that aren't part of the
+ * core color/font system above, but repeat across multiple components.
+ * Plain @theme (not @theme inline) here, since these are fixed values, not
+ * ones that change between dark and light like the colors above.
+ */
+@theme {
+  /* Used on the active LanguageSwitch button so the EN/ES/FR abbreviation
+     stays legible no matter which flag color sits behind it. */
+  --text-shadow-sm-heavy: 0 1px 2px rgba(0, 0, 0, 1);
+}
+
+/*
+ * By default, the View Transitions API cross-fades the old and new page
+ * snapshots on its own — that default fade fights visually with the
+ * expanding-circle animation ThemeToggle draws instead. Turning the built-in
+ * animation off lets our clip-path circle be the only motion happening.
+ */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+/* Anchor-link navigation (nav links, the logo's "back to top" link,
+   Hero's CTA to #projects) scrolls smoothly to its target instead of
+   jumping instantly. Reduced motion gets its own override below, since
+   a scrolling animation is exactly the kind of motion some people need
+   to avoid. */
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+/* Without this, scrolling to any section (e.g. clicking "Experience" in
+   the nav) would land with its heading tucked directly behind the fixed
+   header, since the browser's native anchor-scroll positions the target
+   element's top edge flush with the viewport's top edge - which is
+   exactly where NavBar sits. scroll-margin-top tells the browser to
+   leave --nav-height worth of space above the target instead, so it
+   lands visible below the header. Using the same --nav-height variable
+   NavBar already publishes (rather than a hardcoded guess) keeps this
+   correct automatically if the header's height ever changes. 
+
+   section[id] is an attribute selector — it matches any <section> that has an id attribute at all, 
+   regardless of what the id's value is. That means it automatically covers about, experience, projects, contact, 
+   and top (Hero) without needing one rule per section, and it'll keep working automatically if you ever add another 
+   section with its own id later.
+   */
+section[id] {
+  scroll-margin-top: var(--nav-height);
+}
