@@ -23,7 +23,10 @@ export default function Projects() {
           <SectionLabel>{t.projects.featuredLabel}</SectionLabel>
 
           <div className="mt-4 mb-16 flex flex-col gap-16">
-            {t.projects.featuredProjects.map((project) => {
+            {/* index is the second argument .map() gives the callback. Even indexes
+      (0, 2, 4...) keep the image on the left, odd ones (1, 3, 5...) flip it
+      to the right, so the projects alternate down the page. */}
+            {t.projects.featuredProjects.map((project, index) => {
               const links = PROJECT_LINKS[project.slug];
               return (
                 <FeaturedProject
@@ -36,6 +39,7 @@ export default function Projects() {
                   liveUrl={links?.liveUrl ?? "#"}
                   githubUrl={links?.githubUrl ?? "#"}
                   imageUrl={links?.imageUrl}
+                  reverse={index % 2 === 1}
                 />
               );
             })}

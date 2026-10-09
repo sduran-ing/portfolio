@@ -2,13 +2,14 @@
 
 import { motion, useReducedMotion } from "framer-motion";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { GithubIcon, Linkedin01Icon } from "@hugeicons/core-free-icons";
+import { GithubIcon, Linkedin01Icon, Mail01Icon } from "@hugeicons/core-free-icons";
 import { SOCIAL_LINKS } from "@/lib/utils/constants";
 import { phase3Item } from "@/lib/utils/introMotion";
 
 const icons = [
   { icon: GithubIcon, href: SOCIAL_LINKS.github, label: "GitHub" },
   { icon: Linkedin01Icon, href: SOCIAL_LINKS.linkedin, label: "LinkedIn" },
+  { icon: Mail01Icon, href: SOCIAL_LINKS.email, label: "Email" },
 ];
 
 // Shared hover-lift link style, used by both the desktop fixed column and

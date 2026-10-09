@@ -10,10 +10,12 @@ import { navItem } from "@/lib/utils/introMotion";
 // "as const" on each key keeps it typed as the literal string ("about",
 // not just "string"), which is what lets t.nav[section.key] below type-check
 // against the Content interface instead of widening to a generic string.
-const sections = [
-  { id: "about", key: "about" as const },
-  { id: "experience", key: "experience" as const },
+// Exported so MobileDrawer can build its own bigger, numbered version of
+// these links from the same list - one source of truth for which sections exist.
+export const sections = [
+  { id: "about", key: "about" as const },  
   { id: "projects", key: "projects" as const },
+  { id: "experience", key: "experience" as const },
   { id: "contact", key: "contact" as const },
 ];
 
