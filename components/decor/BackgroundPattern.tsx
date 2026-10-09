@@ -51,16 +51,16 @@ export default function BackgroundPattern() {
     const noise2D = createNoise2D();
 
     // Reads the canvas's current width before picking, so a narrow viewport
-// excludes any pattern that can't draw around the content column
-// (honeycomb now, lines once it gets the same treatment) - otherwise
-// that pattern could get picked and then render nothing at all, since
-// getContentBounds() would exclude the entire screen for it.
-const { width: initialWidth } = canvas.getBoundingClientRect();
-const eligiblePatterns =
-  initialWidth < MIN_WIDTH_FOR_SIDE_PATTERNS
-    ? patterns.filter((p) => !p.avoidsContent)
-    : patterns;
-const pattern = eligiblePatterns[Math.floor(Math.random() * eligiblePatterns.length)];
+    // excludes any pattern that can't draw around the content column
+    // (honeycomb now, lines once it gets the same treatment) - otherwise
+    // that pattern could get picked and then render nothing at all, since
+    // getContentBounds() would exclude the entire screen for it.
+    const { width: initialWidth } = canvas.getBoundingClientRect();
+    const eligiblePatterns =
+      initialWidth < MIN_WIDTH_FOR_SIDE_PATTERNS
+        ? patterns.filter((p) => !p.avoidsContent)
+        : patterns;
+    const pattern = eligiblePatterns[Math.floor(Math.random() * eligiblePatterns.length)];
 
     // Whatever generate() returns for the pattern picked above - Dot[],
     // Connection[], RootSegment[], or Hexagon[], depending which pattern
@@ -137,9 +137,17 @@ const pattern = eligiblePatterns[Math.floor(Math.random() * eligiblePatterns.len
   }, []);
 
   return (
+    // h-screen (100vh) instead of inset-0 + h-full. On mobile browsers,
+    // 100vh is the height with the address bar hidden, and it stays
+    // constant while you scroll. h-full on a fixed element follows the
+    // *visible* viewport instead, which grows and shrinks every time the
+    // address bar slides in or out. Every one of those size changes fired
+    // the ResizeObserver above and regenerated the whole pattern. When the
+    // bar is showing, the bottom ~60px of the canvas sits under it, which
+    // doesn't matter for a background.
     <canvas
       ref={canvasRef}
-      className="pointer-events-none fixed inset-0 -z-10 h-full w-full"
+      className="pointer-events-none fixed top-0 left-0 -z-10 h-screen w-full"
       aria-hidden="true"
     />
   );

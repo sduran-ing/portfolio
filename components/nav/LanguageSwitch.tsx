@@ -62,7 +62,7 @@ export default function LanguageSwitch({ vertical = false }: LanguageSwitchProps
         // background so it reads as "off" until selected.
         const stateClass = isActive
           ? "text-white text-shadow-sm-heavy"
-          : "bg-surface text-muted hover:text-ink";
+          : "bg-surface text-muted hover:text-accent";
 
         return (
           <button
@@ -74,7 +74,7 @@ export default function LanguageSwitch({ vertical = false }: LanguageSwitchProps
             // it's a different value per language, computed from the data
             // above rather than a fixed set of utilities.
             style={isActive ? { backgroundImage: option.activeBg } : undefined}
-            className={`px-3 py-2 font-mono text-sm font-semibold transition-colors ${dividerClass} ${stateClass}`}
+            className={`px-3 py-2 font-mono text-sm font-semibold transition-colors cursor-pointer ${dividerClass} ${stateClass}`}
           >
             {option.label}
           </button>

@@ -22,8 +22,15 @@ export const PROJECT_LINKS: Record<string, { liveUrl?: string; githubUrl: string
     githubUrl: "https://github.com/sduran-ing/quality-management-platform",
     imageUrl: "https://raw.githubusercontent.com/sduran-ing/quality-management-platform/refs/heads/main/docs/screenshots/02-dashboard.png",
   },
+  "u-belong": {
+    liveUrl: "https://u-belong.lovable.app/",
+    githubUrl: "https://github.com/sduran-ing/u-belong",
+    imageUrl: "https://raw.githubusercontent.com/sduran-ing/u-belong/refs/heads/main/docs/screenshots/01-main-page.png",
+  },
   "smart-budget": {
     githubUrl: "https://github.com/sduran-ing/smart-budget-app",
   },
-
+  "task-bot": {
+    githubUrl: "https://github.com/sduran-ing/taskbot",
+  },
 };

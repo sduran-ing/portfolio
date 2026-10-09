@@ -13,6 +13,11 @@ interface FeaturedProjectProps {
   // doesn't), so this falls back to the placeholder text instead of
   // breaking or rendering next/image with an undefined src.
   imageUrl?: string;
+  // Alternates which side the screenshot renders on. Projects.tsx computes
+  // this from the project's index in the list (even index = false, odd =
+  // true) so featured projects zigzag image-left / image-right down the
+  // page instead of every one looking identical.
+  reverse?: boolean;
 }
 
 export default function FeaturedProject({
@@ -24,11 +29,19 @@ export default function FeaturedProject({
   liveUrl,
   githubUrl,
   imageUrl,
+  reverse = false,
 }: FeaturedProjectProps) {
   return (
-    // items-center (not items-start): centers the text card against the
-    // image's full height, instead of pinning it to the top edge.
-    <div className="flex flex-col gap-6 sm:flex-row sm:items-center">
+    // sm:flex-row-reverse swaps which side the image renders on, purely
+    // visually - the <a> and the text <div> below stay in the same order
+    // in the markup either way, flex-direction just changes how the browser
+    // lays out that same order. Mobile always stacks image-then-text
+    // regardless of reverse - alternating sides only makes sense once
+    // there's a "left" and "right" to alternate between.
+    <div
+      className={`flex flex-col gap-6 sm:items-center ${reverse ? "sm:flex-row-reverse" : "sm:flex-row"
+        }`}
+    >
       <a
         // relative + z-0 + overflow-hidden are for next/image's fill mode:
         // fill needs a positioned ancestor of a defined size to fill, and
@@ -76,8 +89,16 @@ export default function FeaturedProject({
         the image next to it can end up winning the stacking order
         despite coming first in the DOM, which showed up as the left edge
         of this card's text rendering hidden behind the image.
-      */}
-      <div className="relative z-10 rounded-lg border border-muted bg-surface-elevated p-6 sm:-ml-20">
+
+        The overlap margin has to flip sides along with the image, or the
+        text card would keep pulling toward the left even on the rows
+        where the image is now on the right - reverse ? -mr-20 : -ml-20
+        always pulls the card toward whichever side the image ended up
+        on. */}
+      <div
+        className={`relative z-10 rounded-lg border border-muted bg-surface-elevated p-6 ${reverse ? "sm:-mr-20" : "sm:-ml-20"
+          }`}
+      >
         <p className="font-sans text-xl font-semibold text-ink">{name}</p>
         <p className="mt-3 text-sm leading-relaxed text-ink">{description}</p>
         <p className="mt-4 font-mono text-xs text-muted">

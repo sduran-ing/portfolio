@@ -74,7 +74,7 @@ export default function ThemeToggle({ vertical = false }: ThemeToggleProps) {
         type="button"
         onClick={handleToggle}
         // justify-center needed since it's a flex row, so its icon+label need justify-content to center as a group, not just text-align
-        className="flex w-full items-center justify-center gap-2 px-3 py-2 font-mono text-xs font-semibold text-muted transition-colors hover:text-accent"
+        className="flex w-full items-center justify-center gap-2 px-3 py-2 font-mono text-xs font-semibold text-muted transition-colors hover:text-accent cursor-pointer"
       >
         <HugeiconsIcon icon={icon} size={18} strokeWidth={1.5} />
       </button>
@@ -86,7 +86,7 @@ export default function ThemeToggle({ vertical = false }: ThemeToggleProps) {
       type="button"
       onClick={handleToggle}
       aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
-      className="text-muted transition-colors hover:text-accent"
+      className="text-muted transition-colors hover:text-accent cursor-pointer"
     >
       <HugeiconsIcon icon={icon} size={22} strokeWidth={1.5} />
     </button>

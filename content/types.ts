@@ -5,7 +5,8 @@
 export interface ExperienceEntry {
   dateRange: string;
   role: string;
-  company: string;
+  companyShort: string;
+  companyFull: string;
   description: string;
   tech: string[];
 }
@@ -23,9 +24,9 @@ export interface ProjectEntry {
 
 export interface Content {
   nav: {
-    about: string;
-    experience: string;
+    about: string;    
     projects: string;
+    experience: string;
     contact: string;
   };
   hero: {

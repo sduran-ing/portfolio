@@ -4,10 +4,11 @@ import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { motion, useReducedMotion } from "framer-motion";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { Menu01Icon, Cancel01Icon, PaintBoardIcon } from "@hugeicons/core-free-icons";
+import { Menu01Icon, PaintBoardIcon, Mail01Icon } from "@hugeicons/core-free-icons";
 import { useIsClient } from "@/lib/hooks/useIsClient";
 import { phase3Item } from "@/lib/utils/introMotion";
-import NavLinks from "./NavLinks";
+import { SOCIAL_LINKS } from "@/lib/utils/constants";
+import MobileDrawer from "./MobileDrawer";
 import LanguageSwitch from "./LanguageSwitch";
 import ThemeToggle from "./ThemeToggle";
 
@@ -18,6 +19,8 @@ import ThemeToggle from "./ThemeToggle";
 const DESKTOP_BREAKPOINT = "(min-width: 768px)";
 
 export default function MobileMenu() {
+  // linksOpen is the slide-in drawer with the section links; styleOpen is
+  // the small language/theme panel above the floating button.
   const [linksOpen, setLinksOpen] = useState(false);
   const [styleOpen, setStyleOpen] = useState(false);
 
@@ -35,17 +38,15 @@ export default function MobileMenu() {
   // element that needs it, here in this file, is what actually works.
   const shouldReduceMotion = useReducedMotion();
 
-  // Refs to each trigger button and its panel. The click-outside handler
-  // below uses these to tell "clicked inside this menu" apart from
-  // "clicked elsewhere on the page."
-  const linksButtonRef = useRef<HTMLButtonElement>(null);
-  const linksPanelRef = useRef<HTMLDivElement>(null);
+  // Refs for the style panel's click-outside check below. The links
+  // drawer doesn't need any: its overlay handles "tap outside" by itself.
   const styleButtonRef = useRef<HTMLButtonElement>(null);
   const stylePanelRef = useRef<HTMLDivElement>(null);
 
-  // Locks background scrolling while the section-links panel is open, so
-  // it reads as a deliberate stop (pick a section, or dismiss it) rather
-  // than something floating on top of a page you can keep scrolling.
+  // Freezes the page while the drawer is open, so the background can't
+  // scroll underneath the blur. Closing the drawer by any route (link, X,
+  // overlay, Escape, resize) flips linksOpen to false, which runs this
+  // again and unfreezes the page.
   useEffect(() => {
     document.body.style.overflow = linksOpen ? "hidden" : "";
     return () => {
@@ -53,21 +54,27 @@ export default function MobileMenu() {
     };
   }, [linksOpen]);
 
-  // Closes a panel on a click anywhere outside of it, but not on its own
-  // trigger button. That button's onClick already handles toggling; if
-  // this handler also reacted to clicks on the button, the two would race
-  // and the panel could immediately reopen right after closing.
+  // Escape closes the drawer. Only listens while it's open, so it isn't
+  // sitting on every keypress on the page for no reason.
+  useEffect(() => {
+    if (!linksOpen) return;
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") setLinksOpen(false);
+    }
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [linksOpen]);
+
+  // Closes the style panel on a click anywhere outside of it, but not on
+  // its own trigger button. That button's onClick already handles
+  // toggling; if this handler also reacted to clicks on the button, the
+  // two would race and the panel could immediately reopen right after
+  // closing.
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       const target = event.target as Node;
-
-      if (
-        linksOpen &&
-        !linksPanelRef.current?.contains(target) &&
-        !linksButtonRef.current?.contains(target)
-      ) {
-        setLinksOpen(false);
-      }
 
       if (
         styleOpen &&
@@ -80,7 +87,7 @@ export default function MobileMenu() {
 
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [linksOpen, styleOpen]);
+  }, [styleOpen]);
 
   // Force-closes both panels if the window is ever resized past the
   // desktop breakpoint. Without this, a panel opened on mobile stayed
@@ -105,26 +112,27 @@ export default function MobileMenu() {
 
   return (
     <>
+      {/* This button only ever opens the drawer now. Once it's open, the
+          drawer's overlay covers this button, so the X lives inside the
+          drawer instead of this icon swapping to an X like it used to. */}
       <motion.button
         initial={shouldReduceMotion ? "visible" : "hidden"}
         animate="visible"
         variants={phase3Item}
-        ref={linksButtonRef}
         type="button"
-        onClick={() => setLinksOpen((open) => !open)}
+        onClick={() => {
+          setStyleOpen(false);
+          setLinksOpen(true);
+        }}
         aria-expanded={linksOpen}
-        aria-label={linksOpen ? "Close menu" : "Open menu"}
+        aria-label="Open menu"
         className="text-ink"
       >
-        <HugeiconsIcon
-          icon={linksOpen ? Cancel01Icon : Menu01Icon}
-          size={22}
-          strokeWidth={1.5}
-        />
+        <HugeiconsIcon icon={Menu01Icon} size={22} strokeWidth={1.5} />
       </motion.button>
 
       {/*
-        Both panels below render via createPortal straight into
+        Everything below renders via createPortal straight into
         document.body. NavBar's header has a CSS transform on it (for the
         scroll hide/show slide), and a transformed ancestor becomes the
         positioning reference for any position:fixed descendant instead of
@@ -133,15 +141,12 @@ export default function MobileMenu() {
         header at all.
       */}
 
-      {isClient && linksOpen && (
+      {/* The drawer is always mounted inside this portal (when on the
+          client) and decides for itself whether to show anything - that's
+          what lets AnimatePresence inside it play the exit animation. */}
+      {isClient && (
         <PortalToBody>
-          <div
-            ref={linksPanelRef}
-            className="fixed inset-x-0 z-40 flex flex-col gap-4 border-t border-muted bg-surface px-6 py-6"
-            style={{ top: "var(--nav-height)" }}
-          >
-            <NavLinks className="flex flex-col gap-4" />
-          </div>
+          <MobileDrawer open={linksOpen} onClose={() => setLinksOpen(false)} />
         </PortalToBody>
       )}
 
@@ -175,7 +180,7 @@ export default function MobileMenu() {
   );
 }
 
-// Small wrapper so the two createPortal calls above don't need their own
+// Small wrapper so the createPortal calls above don't need their own
 // inline JSX comments explaining the target - the name says it.
 function PortalToBody({ children }: { children: React.ReactNode }) {
   return createPortal(children, document.body);
@@ -194,6 +199,20 @@ function StylePanel({ panelRef }: { panelRef: React.RefObject<HTMLDivElement | n
       className="mb-3 w-12 overflow-hidden rounded-md border border-muted bg-surface"
     >
       <LanguageSwitch vertical />
+
+      {/* A plain <a> with a mailto: link instead of a <button>, because it
+          navigates (opens the user's mail app) rather than toggling
+          something. SOCIAL_LINKS.email already includes the "mailto:"
+          prefix, so it's used as-is here. The icon has no visible text, so
+          aria-label is what screen readers announce. */}
+      <a
+        href={SOCIAL_LINKS.email}
+        aria-label="Send an email"
+        className="flex h-10 w-full items-center justify-center border-b border-muted text-muted transition-colors hover:text-ink"
+      >
+        <HugeiconsIcon icon={Mail01Icon} size={20} strokeWidth={1.5} />
+      </a>
+
       <ThemeToggle vertical />
     </div>
   );
